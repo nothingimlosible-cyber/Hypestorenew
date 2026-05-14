@@ -110,6 +110,20 @@ export default function App() {
   const [pFiles, setPFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isManualLogin, setIsManualLogin] = useState(false);
+  const [manualPass, setManualPass] = useState('');
+
+  // Auto-login from localStorage if previously verified
+  useEffect(() => {
+    const savedAdmin = localStorage.getItem('hype_admin_access');
+    if (savedAdmin === 'true') {
+      setIsAdmin(true);
+    }
+    // Auto-switch to manual login if on Vercel to avoid domain errors
+    if (window.location.hostname.includes('vercel.app')) {
+      setIsManualLogin(true);
+    }
+  }, []);
 
   function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
     const errInfo: FirestoreErrorInfo = {
@@ -194,11 +208,37 @@ export default function App() {
       await signInWithRedirect(auth, provider);
     } catch (err: any) {
       console.error("Login Initiation Error:", err);
-      alert("Gagal memulai login: " + (err.message || "Unknown error"));
+      if (err.code === "auth/unauthorized-domain" || err.message?.includes("unauthorized-domain")) {
+         alert("Domain 'hypestorenew.vercel.app' belum didaftarkan di Firebase Console! Silakan gunakan login manual untuk sementara.");
+         setIsManualLogin(true);
+      } else {
+         alert("Gagal memulai login: " + (err.message || "Unknown error"));
+      }
     }
   };
 
-  const handleLogout = () => signOut(auth);
+  const handleSecretLogin = () => {
+    // Passcode khusus untuk kakak agar tidak perlu pusing Google Login
+    if (manualPass === "hype2026") {
+      setIsAdmin(true);
+      setShowLoginModal(false);
+      localStorage.setItem('hype_admin_access', 'true');
+      alert("Akses Admin Aktif! (Tersimpan di browser ini)");
+    } else {
+      alert("Passcode Salah!");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setIsAdmin(false);
+      localStorage.removeItem('hype_admin_access');
+      alert("Logged Out!");
+    } catch (err) {
+      alert("Gagal logout.");
+    }
+  };
 
   const deleteProduct = async (id: string) => {
     if (!window.confirm("Hapus produk ini?")) return;
@@ -844,13 +884,53 @@ export default function App() {
               <h3 className="font-black text-slate-900 uppercase tracking-[0.2em] text-xs mb-4">Admin Authentication</h3>
               <p className="text-[10px] text-slate-400 font-bold uppercase mb-8 tracking-widest">Akses khusus pengelola HYPESTORE</p>
               
-              <button 
-                onClick={handleGoogleLogin}
-                className="w-full py-6 bg-slate-900 text-white rounded-[2rem] flex items-center justify-center gap-4 hover:bg-indigo-600 transition-all active:scale-95 shadow-xl shadow-slate-900/10"
-              >
-                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" />
-                 <span className="text-xs font-black uppercase tracking-widest text-white">Login with Google</span>
-              </button>
+              {!isManualLogin ? (
+                <>
+                  <button 
+                    onClick={handleGoogleLogin}
+                    className="w-full py-6 bg-slate-900 text-white rounded-[2rem] flex items-center justify-center gap-4 hover:bg-indigo-600 transition-all active:scale-95 shadow-xl shadow-slate-900/10 mb-4"
+                  >
+                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" />
+                     <span className="text-xs font-black uppercase tracking-widest text-white">Login with Google</span>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setIsManualLogin(true)}
+                    className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                  >
+                    Atau Login dengan Passcode
+                  </button>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-left bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-4">
+                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1 tracking-widest">Firebase Authorized Domain</p>
+                    <code className="text-[10px] font-mono text-indigo-600 bg-white px-2 py-1 rounded block truncate select-all">hypestorenew.vercel.app</code>
+                  </div>
+
+                  <input 
+                    type="password"
+                    value={manualPass}
+                    onChange={(e) => setManualPass(e.target.value)}
+                    placeholder="Enter Admin Passcode"
+                    className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none text-sm text-center font-black focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  />
+                  
+                  <button 
+                    onClick={handleSecretLogin}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-[2rem] font-black uppercase text-[10px] tracking-widest hover:bg-slate-900 transition-all active:scale-95"
+                  >
+                    Verify Passcode
+                  </button>
+
+                  <button 
+                    onClick={() => setIsManualLogin(false)}
+                    className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-slate-500"
+                  >
+                    Kembali ke Google Login
+                  </button>
+                </div>
+              )}
 
               <button 
                 onClick={() => setShowLoginModal(false)}
