@@ -170,11 +170,23 @@ export default function App() {
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      alert("Login Berhasil!");
+      const result = await signInWithPopup(auth, provider);
+      
+      if (result.user.email !== "nothingimlosible@gmail.com") {
+        await signOut(auth);
+        alert("Maaf, akses admin hanya untuk pengelola resmi.");
+        return;
+      }
+
+      alert("Akses Admin Terverifikasi!");
       setShowLoginModal(false);
-    } catch (err) {
-      alert("Gagal login Google.");
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      if (err.code === "auth/unauthorized-domain") {
+        alert("Domain ini belum terdaftar di Firebase! Tambahkan domain Vercel kakak di Firebase Console > Authentication > Settings > Authorized Domains.");
+      } else {
+        alert("Gagal login Google: " + (err.message || "Unknown error"));
+      }
     }
   };
 
