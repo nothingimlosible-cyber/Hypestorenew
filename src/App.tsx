@@ -36,7 +36,9 @@ import {
   Info,
   Trash2,
   Lock,
-  Mail
+  Mail,
+  Menu,
+  X
 } from 'lucide-react';
 
 enum OperationType {
@@ -110,6 +112,7 @@ export default function App() {
   const [pFiles, setPFiles] = useState<{file: File, preview: string}[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isManualLogin, setIsManualLogin] = useState(false);
   const [manualPass, setManualPass] = useState('');
 
@@ -336,12 +339,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FDFDFF] pb-20 font-sans selection:bg-indigo-100 text-slate-900">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-slate-100 px-6 py-4">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-2"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              style={{ cursor: 'pointer' }}
             >
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <ShoppingBag className="w-5 h-5 text-white" />
@@ -349,13 +354,14 @@ export default function App() {
               <h1 className="text-xl font-extrabold tracking-tight text-slate-900">HYPE<span className="text-indigo-600">STORE</span></h1>
             </motion.div>
             
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+              {/* Desktop Nav */}
               <div className="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
                 <a href="#katalog" className="hover:text-indigo-600 transition-colors">Catalogue</a>
                 <a href="#trust" className="hover:text-indigo-600 transition-colors">Why Us</a>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 {user ? (
                   <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
                     <div className="text-right hidden sm:block">
@@ -376,74 +382,99 @@ export default function App() {
                     <Fingerprint className="w-6 h-6 group-hover:scale-110 transition-transform" />
                   </button>
                 )}
+
+                {/* Hamburger Menu - Mobile & Tablet */}
+                <button 
+                  onClick={() => setShowMobileMenu(!showMobileMenu)}
+                  className="p-2 text-slate-900 hover:bg-slate-50 rounded-lg transition-colors ml-2"
+                >
+                  {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
               </div>
             </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden bg-white border-t border-slate-50"
+            >
+              <div className="flex flex-col p-6 gap-4">
+                <a 
+                  href="#katalog" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="text-sm font-black uppercase tracking-[0.2em] text-slate-900 hover:text-indigo-600 flex items-center justify-between"
+                >
+                  Katalog Produk <ChevronRight className="w-4 h-4" />
+                </a>
+                <a 
+                  href="#trust" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="text-sm font-black uppercase tracking-[0.2em] text-slate-900 hover:text-indigo-600 flex items-center justify-between"
+                >
+                  Tentang Toko <ChevronRight className="w-4 h-4" />
+                </a>
+                <div className="h-px bg-slate-50 my-2" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Hype Matrix Portfolio v2.0</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 px-4">
+      <section className="pt-16 md:pt-24 px-4 overflow-hidden bg-white/50">
         <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-12 mb-20">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-4 mb-4 md:mb-8">
                 <div className="max-w-2xl text-left">
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-[10px] font-black px-4 py-1.5 rounded-full uppercase border border-indigo-100 mb-6"
+                    className="hidden md:inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-indigo-100 mb-3"
                   >
-                    <ShoppingBag className="w-3 h-3" />
-                    Marketplace Curated by Hype Matrix
+                    <Zap className="w-3 h-3 fill-current" />
+                    Marketplace Matrix v2.0
                   </motion.div>
                   <motion.h2 
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    className="text-5xl md:text-8xl font-[900] text-slate-900 tracking-tighter leading-[0.9] italic uppercase"
+                    className="text-3xl md:text-6xl lg:text-7xl font-[900] text-slate-900 tracking-tighter leading-[0.95] italic uppercase"
                   >
                     The Digital <br/><span className="text-indigo-600">Flagship</span> Store.
                   </motion.h2>
-                  <p className="text-slate-400 text-sm font-medium mt-8 max-w-md leading-relaxed uppercase tracking-[0.2em]">
-                    Kurasi produk pilihan dari berbagai platform marketplace terbaik. Klik, Pilih, dan Belanja melalui link affiliate kami.
-                  </p>
-                  
-                  <div className="flex items-center gap-4 mt-10">
-                    <button onClick={() => document.getElementById('katalog')?.scrollIntoView({ behavior: 'smooth' })} className="px-10 py-5 bg-slate-900 text-white rounded-[2rem] font-black uppercase text-[10px] tracking-widest hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-900/10 active:scale-95">
-                      Explore Catalogue
-                    </button>
-                    <div className="hidden sm:flex items-center gap-3 pl-6 border-l border-slate-100">
-                       <p className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em]">Scroll to Discover</p>
-                    </div>
-                  </div>
                 </div>
-                <div className="hidden lg:block relative">
-                   <div className="text-[12rem] font-[900] text-slate-50 leading-none select-none tracking-tighter">HYPE</div>
-                   <div className="absolute -bottom-4 right-0 text-indigo-600 font-black italic tracking-widest text-sm uppercase">Official Portfolio v1.0</div>
+                <div className="hidden lg:block relative -translate-y-4">
+                   <div className="text-[8rem] font-[900] text-slate-100/50 leading-none select-none tracking-tighter">HYPE</div>
                 </div>
             </div>
         </div>
       </section>
 
-      {/* Trust & Features Section */}
-      <section id="trust" className="py-12 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Trust & Features Section - Compact on mobile */}
+      <section id="trust" className="py-6 md:py-12 px-4">
+        <div className="max-w-7xl mx-auto grid grid-cols-3 gap-2 md:gap-6">
           {[
-            { icon: <ShieldCheck className="w-6 h-6" />, title: 'Verified Quality', desc: 'Setiap produk dikurasi ketat oleh tim HYPESTORE.' },
-            { icon: <Zap className="w-6 h-6" />, title: 'Fast Selection', desc: 'Akses instan ke link belanja termurah & terpercaya.' },
-            { icon: <Truck className="w-6 h-6" />, title: 'Premium Source', desc: 'Hanya dari seller TikTok & Shopee bintang 5.' }
+            { icon: <ShieldCheck className="w-4 h-4 md:w-6 md:h-6" />, title: 'Verified', fullTitle: 'Verified Quality' },
+            { icon: <Zap className="w-4 h-4 md:w-6 md:h-6" />, title: 'Fast', fullTitle: 'Fast Selection' },
+            { icon: <Truck className="w-4 h-4 md:w-6 md:h-6" />, title: 'Premium', fullTitle: 'Premium Source' }
           ].map((item, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-8 bg-white border border-slate-100 rounded-[2rem] hover:shadow-xl hover:shadow-slate-200/50 transition-all flex flex-col gap-4 group"
+              className="p-3 md:p-8 bg-white border border-slate-100 rounded-xl md:rounded-[2rem] hover:shadow-xl transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 group"
             >
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-indigo-50 text-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                 {item.icon}
               </div>
-              <div>
-                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">{item.title}</h4>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed font-medium">{item.desc}</p>
+              <div className="text-center md:text-left">
+                <h4 className="text-[8px] md:text-sm font-black text-slate-900 uppercase tracking-tight">{window.innerWidth < 768 ? item.title : item.fullTitle}</h4>
               </div>
             </motion.div>
           ))}
@@ -604,17 +635,17 @@ export default function App() {
       )}
 
       {/* Katalog Section */}
-      <section id="katalog" className="px-4 py-12 scroll-mt-20">
+      <section id="katalog" className="px-4 py-8 md:py-12 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-slate-100 pb-8">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-widest">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 border-b border-slate-100 pb-6">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-indigo-600 font-black text-[9px] uppercase tracking-widest">
                   <div className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
                   Live Collection
                 </div>
-                <h3 className="text-3xl font-[800] text-slate-900 uppercase tracking-tight italic">Our Catalogue.</h3>
+                <h3 className="text-2xl md:text-3xl font-[800] text-slate-900 uppercase tracking-tight italic">Our Catalogue.</h3>
               </div>
-              <div className="flex overflow-x-auto pb-4 gap-2 no-scrollbar -mx-4 px-4 scroll-smooth">
+              <div className="flex overflow-x-auto pb-2 gap-2 no-scrollbar -mx-4 px-4 scroll-smooth">
                 {CATEGORIES.map(cat => (
                   <button 
                     key={cat} 
