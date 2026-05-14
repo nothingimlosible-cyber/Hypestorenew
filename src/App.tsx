@@ -12,11 +12,12 @@ import {
 } from 'firebase/firestore';
 import { 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider, 
   onAuthStateChanged,
   signOut,
   User,
-  signInWithEmailAndPassword
 } from 'firebase/auth';
 import { db, auth } from './lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
@@ -154,6 +155,25 @@ export default function App() {
       handleFirestoreError(error, OperationType.GET, 'products');
     });
 
+    // Handle redirect result
+    getRedirectResult(auth).then((result) => {
+      if (result && result.user) {
+        if (result.user.email !== "nothingimlosible@gmail.com") {
+          signOut(auth).then(() => {
+            alert("Maaf, akses admin hanya untuk pengelola resmi.");
+          });
+        } else {
+          alert("Akses Admin Terverifikasi!");
+          setShowLoginModal(false);
+        }
+      }
+    }).catch((err: any) => {
+      console.error("Redirect Error:", err);
+      if (err.code === "auth/unauthorized-domain") {
+        alert("Domain ini belum terdaftar di Firebase! Tambahkan 'hypestorenew.vercel.app' di Firebase Console > Authentication > Settings > Authorized Domains.");
+      }
+    });
+
     // Listen for auth
     const authUnsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -170,23 +190,11 @@ export default function App() {
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      
-      if (result.user.email !== "nothingimlosible@gmail.com") {
-        await signOut(auth);
-        alert("Maaf, akses admin hanya untuk pengelola resmi.");
-        return;
-      }
-
-      alert("Akses Admin Terverifikasi!");
-      setShowLoginModal(false);
+      // Menggunakan Redirect agar lebih stabil di Mobile Chrome/Safari
+      await signInWithRedirect(auth, provider);
     } catch (err: any) {
-      console.error("Login Error:", err);
-      if (err.code === "auth/unauthorized-domain") {
-        alert("Domain ini belum terdaftar di Firebase! Tambahkan domain Vercel kakak di Firebase Console > Authentication > Settings > Authorized Domains.");
-      } else {
-        alert("Gagal login Google: " + (err.message || "Unknown error"));
-      }
+      console.error("Login Initiation Error:", err);
+      alert("Gagal memulai login: " + (err.message || "Unknown error"));
     }
   };
 
