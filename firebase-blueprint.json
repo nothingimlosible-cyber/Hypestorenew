@@ -1,0 +1,31 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A product listed in the catalogue",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "harga": { "type": "string" },
+        "link": { "type": "string" },
+        "images": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "source": { "type": "string" },
+        "category": { "type": "string" },
+        "etalaseNo": { "type": "string" },
+        "deskripsi": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "nama", "harga", "link", "images", "category"]
+    }
+  },
+  "firestore": {
+    "products": {
+      "schema": "Product",
+      "description": "Collection of all hype products"
+    }
+  }
+}

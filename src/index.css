@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #3b82f6;
+  --color-brand-indigo: #6366f1;
+  --color-bg-deep: #020617;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply antialiased selection:bg-indigo-500/30;
+  }
+  
+  /* Custom Scrollbar for a premium feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
+
+  .markdown-body h1 { @apply text-2xl font-black mb-4 mt-8 text-white tracking-[0.2em] uppercase border-b border-white/5 pb-2; }
+  .markdown-body h2 { @apply text-xl font-black mb-3 mt-6 text-white tracking-[0.15em] uppercase; }
+  .markdown-body h3 { @apply text-lg font-bold mb-2 mt-4 text-indigo-400 tracking-wider uppercase; }
+  .markdown-body p { @apply mb-4 text-slate-400 leading-relaxed text-sm font-medium; }
+  .markdown-body ul { @apply list-none mb-6 space-y-2; }
+  .markdown-body ul li { @apply flex items-start gap-3 text-sm; }
+  .markdown-body ul li::before { content: "→"; @apply text-indigo-500 font-bold; }
+  .markdown-body strong { @apply text-white font-black; }
+  .markdown-body blockquote { @apply border-l-2 border-indigo-500/50 pl-4 italic my-6 text-slate-500 bg-indigo-500/5 py-4 pr-4 rounded-r-xl; }
+  .markdown-body code { @apply bg-white/5 px-1.5 py-0.5 rounded text-blue-400 font-mono text-xs border border-white/10; }
+  .markdown-body pre { @apply bg-black/60 p-6 rounded-2xl overflow-x-auto my-6 border border-white/5 shadow-inner font-mono; }
+  .markdown-body pre code { @apply bg-transparent border-none p-0 text-slate-300 text-xs leading-relaxed; }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/[0.02] backdrop-blur-3xl border border-white/5 rounded-3xl transition-all duration-500;
+  }
+  
+  .glow-blue {
+    @apply shadow-[0_0_50px_-10px_rgba(79,70,229,0.3)];
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-white/90 to-white/30;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-white/5 rounded-full hover:bg-white/10; }
+}

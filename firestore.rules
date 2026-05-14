@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      // Allow the specific admin email
+      return isSignedIn() && request.auth.token.email == "nothingimlosible@gmail.com";
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['id', 'nama', 'harga', 'link', 'images', 'source', 'category', 'createdAt']) &&
+             data.keys().size() >= 8 && data.keys().size() <= 10 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.nama is string && data.nama.size() <= 200 &&
+             data.harga is string && data.harga.size() <= 100 &&
+             data.link is string && data.link.size() <= 1000 &&
+             data.images is list && data.images.size() >= 1 && data.images.size() <= 6 &&
+             data.source is string && data.source.size() <= 100 &&
+             data.category is string && data.category.size() <= 100 &&
+             (data.etalaseNo == null || (data.etalaseNo is string && data.etalaseNo.size() <= 50)) &&
+             (data.deskripsi == null || (data.deskripsi is string && data.deskripsi.size() <= 2000)) &&
+             data.createdAt is timestamp;
+    }
+
+    match /products/{productId} {
+      // Anyone can read the catalogue
+      allow read: if true;
+      
+      // Only admin can write
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(request.resource.data) && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && isValidProduct(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
+    }
+  }
+}
