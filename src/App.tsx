@@ -104,7 +104,7 @@ export default function App() {
   const [pPrice, setPPrice] = useState('');
   const [pLink, setPLink] = useState('');
   const [pSource, setPSource] = useState('');
-  const [pPCategory, setPCategory] = useState('Fashion');
+  const [pCategory, setPCategory] = useState('Fashion');
   const [pEtalase, setPEtalase] = useState('');
   const [pDescription, setPDescription] = useState('');
   const [pFiles, setPFiles] = useState<File[]>([]);
