@@ -640,7 +640,7 @@ export default function App() {
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse font-mono">Initializing Hype Matrix...</p>
               </div>
             ) : (
-              <div id="grid" className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              <div id="grid" className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
                 {products.length === 0 ? (
                   <div className="col-span-full text-center py-24 bg-slate-50 rounded-[2.5rem] border border-slate-100">
                     <Info className="w-10 h-10 text-slate-300 mx-auto mb-4" />
@@ -650,30 +650,30 @@ export default function App() {
                   products.filter(p => selectedCategory === 'All' || p.category === selectedCategory).map((p, idx) => (
                     <motion.div 
                       key={p.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ delay: (idx % 4) * 0.1 }}
-                      className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 p-2 shadow-sm group hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all flex flex-col relative"
+                      transition={{ delay: (idx % 4) * 0.05 }}
+                      className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-sm group hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all flex flex-col relative"
                     >
                         {isAdmin && (
-                          <div className="absolute top-6 right-6 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute top-3 right-3 z-20 flex gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                              <button 
                                onClick={(e) => { e.stopPropagation(); startEdit(p); }}
-                               className="p-2 bg-white rounded-lg shadow-lg hover:bg-slate-50 text-slate-600"
+                               className="p-1.5 md:p-2 bg-white/90 backdrop-blur rounded-lg shadow-lg hover:bg-slate-50 text-slate-600"
                              >
-                                <Plus className="w-4 h-4 rotate-45" /> {/* Use as x/edit icon alternative */}
+                                <Plus className="w-3.5 h-3.5 rotate-45" />
                              </button>
                              <button 
                                onClick={(e) => { e.stopPropagation(); deleteProduct(p.id); }}
-                               className="p-2 bg-red-500 rounded-lg shadow-lg hover:bg-red-600 text-white"
+                               className="p-1.5 md:p-2 bg-red-500/90 backdrop-blur rounded-lg shadow-lg hover:bg-red-600 text-white"
                              >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                              </button>
                           </div>
                         )}
                         <div 
-                          className="overflow-hidden rounded-[2rem] aspect-[3/4] bg-slate-50 relative cursor-pointer"
+                          className="relative aspect-square md:aspect-[4/5] bg-slate-50 overflow-hidden cursor-pointer"
                           onClick={() => { setSelectedProduct(p); setCurrentImgIndex(0); }}
                         >
                             <img 
@@ -683,36 +683,47 @@ export default function App() {
                               loading="lazy"
                               onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x800?text=No+Image' }}
                             />
-                            <div className="absolute top-4 left-4 flex flex-col gap-2">
-                               <span className="bg-white/90 backdrop-blur-md text-slate-900 text-[8px] font-black px-3 py-1 rounded-full shadow-sm border border-white/20 uppercase tracking-widest">
-                                  {p.source || 'AFFILIATE'}
-                               </span>
-                               {p.etalaseNo && (
-                                 <span className="bg-indigo-600 text-white text-[8px] font-black px-3 py-1 rounded-full shadow-sm uppercase tracking-widest self-start">
-                                    Etalase {p.etalaseNo}
+                            
+                            {/* Badges Layout */}
+                            <div className="absolute top-2 left-2 md:top-4 md:left-4 flex flex-col gap-1 md:gap-2 pointer-events-none">
+                               <div className="flex gap-1">
+                                 <span className="bg-slate-900 text-white text-[7px] md:text-[9px] font-black px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-lg uppercase tracking-widest whitespace-nowrap">
+                                    {p.source || 'AFFILIATE'}
                                  </span>
-                               )}
-                               <span className="bg-slate-900 text-white text-[7px] font-black px-2 py-1 rounded-full shadow-sm uppercase tracking-widest self-start opacity-60">
+                                 {p.etalaseNo && (
+                                   <span className="bg-indigo-600 text-white text-[7px] md:text-[9px] font-black px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-lg uppercase tracking-widest whitespace-nowrap">
+                                      #{p.etalaseNo}
+                                   </span>
+                                 )}
+                               </div>
+                               <span className="bg-white/90 backdrop-blur-md text-slate-400 text-[6px] md:text-[8px] font-black px-2 py-0.5 rounded-full shadow-sm border border-slate-100 uppercase tracking-widest self-start">
                                   {p.category}
                                </span>
                             </div>
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                               <span className="text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 translate-y-4 group-hover:translate-y-0 transition-transform">
-                                  View Details <ChevronRight className="w-3 h-3" />
+
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 md:p-6">
+                               <span className="text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 translate-y-2 group-hover:translate-y-0 transition-transform">
+                                  Quick Look <ChevronRight className="w-3 h-3" />
                                </span>
                             </div>
                         </div>
-                        <div className="p-6 text-left flex-1 flex flex-col">
-                            <div className="flex justify-between items-start mb-2 group-hover:text-indigo-600 transition-colors">
-                                <h3 className="text-[13px] font-black uppercase text-slate-900 leading-tight tracking-tight line-clamp-1 flex-1 group-hover:text-indigo-600 font-sans">{p.nama || 'Unnamed Product'}</h3>
-                                <span className="text-indigo-600 font-mono text-[10px] font-black ml-2 shrink-0">{p.harga || 'CHECK'}</span>
-                            </div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">{p.source || 'Marketplace'} Affiliate</p>
+
+                        <div className="p-3 md:p-6 text-left flex-1 flex flex-col">
+                            <h3 className="text-xs md:text-[15px] font-black uppercase text-slate-900 leading-tight tracking-tight line-clamp-2 mb-1 group-hover:text-indigo-600 transition-colors h-8 md:h-10">
+                              {p.nama || 'Unnamed Product'}
+                            </h3>
                             
-                            <div className="mt-auto flex gap-2">
+                            <div className="flex items-center gap-2 mb-3 md:mb-5">
+                               <span className="text-indigo-600 font-mono text-[10px] md:text-sm font-black whitespace-nowrap">
+                                 {p.harga?.startsWith('Rp') ? p.harga.replace(/\s+/g, '') : `Rp ${p.harga}`}
+                               </span>
+                               <div className="h-[2px] flex-1 bg-slate-50" />
+                            </div>
+                            
+                            <div className="mt-auto flex flex-col sm:flex-row gap-2">
                                <button 
                                  onClick={() => { setSelectedProduct(p); setCurrentImgIndex(0); }}
-                                 className="flex-1 py-3.5 bg-slate-50 text-slate-400 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
+                                 className="flex-1 py-2.5 md:py-3.5 bg-slate-50 text-slate-400 rounded-xl md:rounded-2xl text-[8px] md:text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all active:scale-95"
                                >
                                  Detail
                                </button>
@@ -720,10 +731,10 @@ export default function App() {
                                  href={p.link} 
                                  target="_blank" 
                                  rel="noopener noreferrer" 
-                                 className="flex-[2.5] bg-slate-900 text-white py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest text-center hover:bg-indigo-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95"
+                                 className="flex-[2] bg-indigo-600 text-white py-2.5 md:py-3.5 rounded-xl md:rounded-2xl text-[8px] md:text-[9px] font-black uppercase tracking-widest text-center hover:bg-slate-900 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 flex items-center justify-center gap-2"
                                  onClick={(e) => e.stopPropagation()}
-                               >
-                                 Buy Now
+                                >
+                                 Beli Sekarang <ShoppingBag className="w-3 h-3 md:w-3.5 md:h-3.5" />
                                </a>
                             </div>
                         </div>
