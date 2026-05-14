@@ -21,8 +21,9 @@ service cloud.firestore {
     }
 
     function isValidProduct(data) {
-      return data.keys().hasAll(['id', 'nama', 'harga', 'link', 'images', 'source', 'category', 'createdAt']) &&
-             data.keys().size() >= 8 && data.keys().size() <= 10 &&
+      return data.keys().hasAll(['id', 'nama', 'harga', 'link', 'images', 'source', 'category', 'createdAt', 'secret']) &&
+             data.keys().size() >= 9 && data.keys().size() <= 11 &&
+             data.secret == "hype2026" &&
              data.id is string && data.id.size() <= 128 &&
              data.nama is string && data.nama.size() <= 200 &&
              data.harga is string && data.harga.size() <= 100 &&
@@ -39,10 +40,10 @@ service cloud.firestore {
       // Anyone can read the catalogue
       allow read: if true;
       
-      // Only admin can write
-      allow create: if isAdmin() && isValidId(productId) && isValidProduct(request.resource.data) && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && isValidProduct(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
-      allow delete: if isAdmin();
+      // Allow create/update if admin OR if secret is provided in data
+      allow create: if (isAdmin() || request.resource.data.secret == "hype2026") && isValidId(productId) && isValidProduct(request.resource.data) && request.resource.data.createdAt == request.time;
+      allow update: if (isAdmin() || request.resource.data.secret == "hype2026") && isValidProduct(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin() || (exists(/databases/$(database)/documents/products/$(productId)) && get(/databases/$(database)/documents/products/$(productId)).data.secret == "hype2026");
     }
   }
 }

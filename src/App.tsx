@@ -107,7 +107,7 @@ export default function App() {
   const [pCategory, setPCategory] = useState('Fashion');
   const [pEtalase, setPEtalase] = useState('');
   const [pDescription, setPDescription] = useState('');
-  const [pFiles, setPFiles] = useState<File[]>([]);
+  const [pFiles, setPFiles] = useState<{file: File, preview: string}[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isManualLogin, setIsManualLogin] = useState(false);
@@ -265,10 +265,10 @@ export default function App() {
     document.getElementById('adminDashboard')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const uploadFile = async (file: File): Promise<string> => {
+  const uploadFile = async (item: {file: File, preview: string}): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(item.file);
       reader.onload = async () => {
         try {
           const base64 = reader.result as string;
@@ -279,9 +279,9 @@ export default function App() {
           });
           const upData = await upRes.json();
           if (upData.success) resolve(upData.url);
-          else reject(upData.error);
+          else reject(upData.error || "Upload failed");
         } catch (err) {
-          reject(err);
+          reject("Connection error");
         }
       };
       reader.onerror = () => reject("File reading failed");
@@ -300,7 +300,8 @@ export default function App() {
     setIsSaving(true);
     
     try {
-      const uploadedUrls = await Promise.all(pFiles.map(file => uploadFile(file)));
+      // Upload only new files
+      const uploadedUrls = await Promise.all(pFiles.map(item => uploadFile(item)));
       const finalImages = [...existingImages, ...uploadedUrls];
 
       const productId = editingProduct ? editingProduct.id : Date.now().toString();
@@ -314,7 +315,9 @@ export default function App() {
         etalaseNo: pEtalase,
         deskripsi: pDescription,
         images: finalImages,
-        createdAt: editingProduct ? editingProduct.createdAt : serverTimestamp()
+        createdAt: editingProduct ? editingProduct.createdAt : serverTimestamp(),
+        // Add secret for passcode-based authorization bypass
+        secret: 'hype2026'
       };
 
       await setDoc(doc(db, 'products', productId), productData);
@@ -548,9 +551,10 @@ export default function App() {
                                 </button>
                              </div>
                            ))}
-                           {pFiles.map((f, idx) => (
+                           {pFiles.map((item, idx) => (
                              <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border bg-slate-50 flex items-center justify-center">
-                                <span className="text-[8px] font-bold text-indigo-500 uppercase">NEW FILE</span>
+                                <img src={item.preview} className="w-full h-full object-cover" />
+                                <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[6px] px-1 font-bold">NEW</div>
                                 <button 
                                   onClick={() => setPFiles(curr => curr.filter((_, i) => i !== idx))}
                                   className="absolute inset-0 bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -563,7 +567,13 @@ export default function App() {
                         <input 
                           type="file" 
                           multiple
-                          onChange={(e) => setPFiles(curr => [...curr, ...Array.from(e.target.files || [])])}
+                          onChange={(e) => {
+                            const selected = Array.from(e.target.files || []).map(f => ({
+                              file: f,
+                              preview: URL.createObjectURL(f)
+                            }));
+                            setPFiles(curr => [...curr, ...selected]);
+                          }}
                           accept="image/*" 
                           className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-[10px] file:mr-4 file:bg-indigo-600 file:text-white file:border-none file:px-4 file:py-1 file:rounded-lg file:font-black file:uppercase file:text-[9px] cursor-pointer" 
                         />

@@ -20,38 +20,38 @@ async function startServer() {
 
   // Upload Action (ImgBB proxy)
   app.post("/api/upload", async (req, res) => {
-    const apiKey = process.env.IBB;
+    // List keys from user to prevent "unauthorized" or "quota" errors
+    const keys = [
+      process.env.IBB,
+      "4b0e7625ca15a17bbb9048f4a56a46f1",
+      "ffd03b4182baf51dc036903cc090a4a3"
+    ].filter(Boolean) as string[];
+
     const { image } = req.body;
+    if (!image) return res.status(400).json({ error: "Gambar tidak terkirim" });
 
-    if (!apiKey) {
-      return res.status(500).json({ error: "API Key IBB tidak ditemukan" });
-    }
-    if (!image) {
-      return res.status(400).json({ error: "Gambar tidak terkirim" });
-    }
+    const cleanBase64 = image.includes("base64,") ? image.split("base64,")[1] : image;
 
-    try {
-      const cleanBase64 = image.includes("base64,")
-        ? image.split("base64,")[1]
-        : image;
+    // Try each key
+    for (const apiKey of keys) {
+      try {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+          method: "POST",
+          body: new URLSearchParams({ image: cleanBase64 }),
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        });
 
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: "POST",
-        body: new URLSearchParams({ image: cleanBase64 }),
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-
-      const result = await response.json() as any;
-
-      if (result.success) {
-        res.json({ success: true, url: result.data.url });
-      } else {
-        res.status(400).json({ error: "Respon ImgBB: " + (result.error?.message || "Gagal") });
+        const result = await response.json() as any;
+        if (result.success) {
+          const finalUrl = result.data.display_url || result.data.url;
+          return res.json({ success: true, url: finalUrl });
+        }
+      } catch (err) {
+        console.error("Key failed:", apiKey);
       }
-    } catch (err: any) {
-      console.error("Upload failed:", err);
-      res.status(500).json({ error: "Server Error: " + err.message });
     }
+
+    res.status(400).json({ error: "Semua API Key Gagal atau Limit. Silakan cek ulang Key kaka." });
   });
 
   // Vite middleware for development
